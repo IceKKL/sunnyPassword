@@ -1,6 +1,8 @@
 import os
 import sys
 import string
+from mmap import error
+
 import pwinput
 
 masterPin = "1234"
@@ -16,16 +18,16 @@ def contextMenu():
         checkPassword()
 
 def caesarCipher(text):
-    alphabet = string.ascii_lowercase # set used
-    shifted_alphabet = alphabet[5:] + alphabet[:5] # by how many to shift the letter
-    table = str.maketrans(alphabet, shifted_alphabet) # make a table of shifts
-    return text.translate(table)
+    cipheredPassword = ""
+    for char in text:
+        cipheredPassword += chr(ord(char) + 5)
+    return cipheredPassword
 
 def caesarDecipher(text):
-    alphabet = string.ascii_lowercase
-    shifted_alphabet = alphabet[-5:] + alphabet[:-5]
-    table = str.maketrans(alphabet, shifted_alphabet)
-    return text.translate(table)
+    decipheredPassword = ""
+    for char in text:
+        decipheredPassword += chr(ord(char) + -5)
+    return decipheredPassword
 
 def addPassword():
     accountName = input("What is the name of your account? ")
@@ -51,17 +53,24 @@ def checkPassword():
     accountName = input("What is the name of your account? ")
     chosenApp = input("What app do you want to check the password for? ")
 
-    with open("passwords.txt", "r") as file: # opens as read only
+    with open("passwords.txt", "r", encoding="utf-8") as file: # opens as read only
         for line in file:
             words = line.strip().split(" ")
             if words[0] == accountName and words[1] == chosenApp:
                 masterPinInput = input("Input master pin, to unlock your password: ")
                 if masterPinInput == masterPin:
                     print(caesarDecipher(words[2]))
+                else:
+                    print("Incorrect master pin")
                 break
+        else:
+            print("No password found")
 
 def save(accountName, passwordDestination, password):
-    with open("passwords.txt", "a") as file: # open as append
-        file.write(accountName + " " + passwordDestination + " " + caesarCipher(password))
+    fileExists = os.path.isfile("passwords.txt") and os.path.getsize("passwords.txt") > 0
+    with open("passwords.txt", "a", encoding="utf-8") as file: # open as append
+        if fileExists:
+            file.write("\n")
+        file.write(f"{accountName} {passwordDestination} {caesarCipher(password)}")
 
 
