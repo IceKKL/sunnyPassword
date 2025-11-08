@@ -3,6 +3,18 @@ import sys
 import string
 import pwinput
 
+masterPin = "1234"
+
+def contextMenu():
+    print("What would you like to do?")
+    print("1. Add a password")
+    print("2. Read a password")
+    userChoice = input("Choose one of the options: ")
+    if userChoice == "1":
+        addPassword()
+    if userChoice == "2":
+        checkPassword()
+
 def caesarCipher(text):
     alphabet = string.ascii_lowercase # set used
     shifted_alphabet = alphabet[5:] + alphabet[:5] # by how many to shift the letter
@@ -15,7 +27,9 @@ def caesarDecipher(text):
     table = str.maketrans(alphabet, shifted_alphabet)
     return text.translate(table)
 
-def password():
+def addPassword():
+    accountName = input("What is the name of your account? ")
+    passwordDestination = input("What is the password for? ")
     while True:
         # both options used for testing, will change to only "pwinput" at the end
         # uses pwinput if the file is opened in a terminal
@@ -27,35 +41,27 @@ def password():
             passwordSecondTry = input("Repeat password: ")
 
         if passwordFirstTry == passwordSecondTry:
-            print("Passwords match")
-            passwordDestination = input("What is the password for? ")
-            save(passwordFirstTry, passwordDestination)
+            save(accountName, passwordDestination, passwordFirstTry)
+            print("Passwords match, saving")
             break
         else:
             print("Passwords do not match")
 
-def save(password, passwordDestination):
-    with open("passwords.txt", "a+b") as file: # open as append and binary
-        try:
-            file.seek(-2, os.SEEK_END) # set coursor to 2 bites before end of file
-            while file.read(1) != b'\n': # read one sign, if it's not new line continue
-                file.seek(-2, os.SEEK_CUR) # go another two
-        except OSError: # if file is too short, set coursor to 0
-            file.seek(0)
-        lastLine = file.readline().decode()
+def checkPassword():
+    accountName = input("What is the name of your account? ")
+    chosenApp = input("What app do you want to check the password for? ")
 
-        lineNumber = "" # get lineNumber from the file
-        for char in lastLine:
-            if char.isnumeric(): # as long as there are continuous numbers
-                lineNumber += char
-            else:
+    with open("passwords.txt", "r") as file: # opens as read only
+        for line in file:
+            words = line.strip().split(" ")
+            if words[0] == accountName and words[1] == chosenApp:
+                masterPinInput = input("Input master pin, to unlock your password: ")
+                if masterPinInput == masterPin:
+                    print(caesarDecipher(words[2]))
                 break
 
-        if lineNumber: # if lineNumber exists, add 1 to it
-            newLineNumber = int(lineNumber) + 1
-            file.write(("\n" + str(newLineNumber) + ". " + caesarCipher(password) + " | " + passwordDestination).encode("utf-8"))
-        else: # else set it to 1
-            newLineNumber = 1
-            file.write((str(newLineNumber) + ". " + caesarCipher(password) + " | " + passwordDestination).encode("utf-8"))
+def save(accountName, passwordDestination, password):
+    with open("passwords.txt", "a") as file: # open as append
+        file.write(accountName + " " + passwordDestination + " " + caesarCipher(password))
 
 

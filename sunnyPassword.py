@@ -1,6 +1,6 @@
 import functions
 
-functions.password()
+functions.contextMenu()
 
 ## TO DO:
 # Only lowercase characters work
