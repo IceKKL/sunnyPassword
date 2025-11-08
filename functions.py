@@ -3,10 +3,16 @@ import sys
 import string
 import pwinput
 
-def caesar(text):
+def caesarCipher(text):
     alphabet = string.ascii_lowercase # set used
     shifted_alphabet = alphabet[5:] + alphabet[:5] # by how many to shift the letter
     table = str.maketrans(alphabet, shifted_alphabet) # make a table of shifts
+    return text.translate(table)
+
+def caesarDecipher(text):
+    alphabet = string.ascii_lowercase
+    shifted_alphabet = alphabet[-5:] + alphabet[:-5]
+    table = str.maketrans(alphabet, shifted_alphabet)
     return text.translate(table)
 
 def password():
@@ -21,13 +27,14 @@ def password():
             passwordSecondTry = input("Repeat password: ")
 
         if passwordFirstTry == passwordSecondTry:
-            print("Passwords match, saving")
-            save(passwordFirstTry)
+            print("Passwords match")
+            passwordDestination = input("What is the password for? ")
+            save(passwordFirstTry, passwordDestination)
             break
         else:
             print("Passwords do not match")
 
-def save(password):
+def save(password, passwordDestination):
     with open("passwords.txt", "a+b") as file: # open as append and binary
         try:
             file.seek(-2, os.SEEK_END) # set coursor to 2 bites before end of file
@@ -46,9 +53,9 @@ def save(password):
 
         if lineNumber: # if lineNumber exists, add 1 to it
             newLineNumber = int(lineNumber) + 1
-            file.write(("\n" + str(newLineNumber) + ". " + caesar(password)).encode("utf-8"))
+            file.write(("\n" + str(newLineNumber) + ". " + caesarCipher(password) + " | " + passwordDestination).encode("utf-8"))
         else: # else set it to 1
             newLineNumber = 1
-            file.write((str(newLineNumber) + ". " + caesar(password)).encode("utf-8"))
+            file.write((str(newLineNumber) + ". " + caesarCipher(password) + " | " + passwordDestination).encode("utf-8"))
 
 
